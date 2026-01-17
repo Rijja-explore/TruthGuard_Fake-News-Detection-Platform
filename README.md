@@ -15,6 +15,9 @@ An advanced AI-powered web application for detecting fake news and misinformatio
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
+- [Project Milestones](#project-milestones)
+- [Technology Presentation](#technology-presentation)
+- [Simple Chatbot](#simple-chatbot)
 - [API Endpoints](#api-endpoints)
 - [Screenshots](#screenshots)
 - [Contributing](#contributing)
@@ -84,7 +87,7 @@ An advanced AI-powered web application for detecting fake news and misinformatio
 ### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/yourusername/Fake-News-Detection.git
-cd Fake-News-Detection/Milestone-1
+cd Fake-News-Detection/Milestone-4-Complete
 ```
 
 ### Step 2: Create Virtual Environment
@@ -104,11 +107,11 @@ pip install -r requirements.txt
 ```
 
 ### Step 4: Set Up Environment Variables
-Create a `.env` file in the `Milestone-1` directory:
+Create a `.env` file in the `Milestone-4-Complete` directory:
 ```env
 SECRET_KEY=your-secret-key-here
 GEMINI_API_KEY=your-gemini-api-key-here
-GEMINI_MODEL=gemini-2.0-flash-exp
+GEMINI_MODEL=gemini-2.5-flash
 DATABASE_URL=sqlite:///truthguard.db
 FLASK_ENV=development
 ```
@@ -140,7 +143,7 @@ The application will be available at `http://localhost:5000`
 |----------|-------------|---------|
 | `SECRET_KEY` | Flask secret key for sessions | Random generated |
 | `GEMINI_API_KEY` | Google Gemini API key | None |
-| `GEMINI_MODEL` | Gemini model version | gemini-2.0-flash-exp |
+| `GEMINI_MODEL` | Gemini model version | gemini-2.5-flash |
 | `DATABASE_URL` | Database connection string | sqlite:///truthguard.db |
 | `FLASK_ENV` | Environment mode | development |
 | `MAX_CONTENT_LENGTH` | Max upload size | 16MB |
@@ -176,29 +179,106 @@ The application will be available at `http://localhost:5000`
 
 ```
 Fake-News-Detection/
-├── Milestone-1/
-│   ├── app.py                 # Main application file
-│   ├── .env                   # Environment variables
-│   ├── requirements.txt       # Python dependencies
-│   ├── instance/
-│   │   └── truthguard.db     # SQLite database
-│   ├── static/
-│   │   └── uploads/          # User uploaded files
-│   ├── templates/
-│   │   ├── base.html         # Base template
-│   │   ├── index.html        # Landing page
-│   │   ├── login.html        # Login page
-│   │   ├── register.html     # Registration page
-│   │   ├── dashboard.html    # User dashboard
-│   │   ├── analysis.html     # Analysis interface
-│   │   ├── profile.html      # User profile
-│   │   └── about.html        # About page
-│   └── logs/
-│       └── truthguard.log    # Application logs
-└── README.md
+├── README.md                          # Project documentation
+├── Explanation/                       # Detailed component explanations
+│   ├── admin dashboard explain.docx
+│   ├── analyze page.docx
+│   ├── analyze route logic.docx
+│   ├── appmain.docx
+│   ├── Base Template.docx
+│   ├── dashboard explaination.docx
+│   ├── index.docx
+│   └── profile explanation.docx
+├── Fake News Tool- Technology PPT/    # Technology presentations
+│   ├── Fake News Detection & Verification Tool.pptx
+│   └── NLP Technologies.pptx
+├── simplechatbot/                     # Chatbot documentation
+│   └── Enhanced Chatbot.docx
+├── Milestone-1/                       # Basic application setup
+│   ├── process/
+│   │   ├── app.py
+│   │   ├── instance/
+│   │   ├── logs/
+│   │   └── templates/
+├── Milestone-2/                       # Enhanced features
+│   ├── process/
+│   │   ├── app.py
+│   │   ├── instance/
+│   │   ├── logs/
+│   │   └── templates/
+├── Milestone-3/                       # Advanced functionality
+│   ├── process/
+│   │   ├── app.py
+│   │   ├── instance/
+│   │   ├── logs/
+│   │   └── templates/
+└── Milestone-4-Complete/              # Final complete application
+    ├── app.py                         # Main application file
+    ├── requirements.txt               # Python dependencies
+    ├── instance/
+    │   └── truthguard.db             # SQLite database
+    ├── static/
+    │   └── uploads/                  # User uploaded files
+    ├── templates/                    # HTML templates
+    │   ├── base.html
+    │   ├── index.html
+    │   ├── login.html
+    │   ├── register.html
+    │   ├── dashboard.html
+    │   ├── analyze.html
+    │   ├── profile.html
+    │   ├── about.html
+    │   ├── contact.html
+    │   ├── analysis_detail.html
+    │   ├── analysis_history.html
+    │   └── admin/
+    └── logs/
+        └── truthguard.log            # Application logs
 ```
 
-## 🔌 API Endpoints
+## � Project Milestones
+
+The project was developed incrementally across four milestones:
+
+### Milestone 1: Foundation
+- Basic Flask application setup
+- User authentication system
+- Simple analysis interface
+- Database integration
+
+### Milestone 2: Enhanced Features
+- Advanced user dashboard
+- Analysis history tracking
+- Profile management
+- Improved UI/UX
+
+### Milestone 3: Advanced Functionality
+- AI integration preparation
+- Enhanced analysis capabilities
+- Admin panel development
+- Performance optimizations
+
+### Milestone 4: Complete Implementation
+- Full Google Gemini AI integration
+- Comprehensive fake news detection
+- Chatbot implementation
+- Production-ready features
+- Complete admin system
+
+## 📊 Technology Presentation
+
+The `Fake News Tool- Technology PPT/` folder contains detailed presentations about the technologies used:
+
+- **Fake News Detection & Verification Tool.pptx**: Comprehensive overview of the detection methodology and tool capabilities
+- **NLP Technologies.pptx**: Deep dive into Natural Language Processing techniques employed
+
+## 🤖 Simple Chatbot
+
+The `simplechatbot/` folder contains documentation for the integrated chatbot system:
+
+- **Enhanced Chatbot.docx**: Detailed explanation of the chatbot architecture, implementation, and integration with the main application
+
+The chatbot provides user assistance and is powered by Google Gemini AI for intelligent responses.
 
 ### Public Routes
 - `GET /` - Landing page
