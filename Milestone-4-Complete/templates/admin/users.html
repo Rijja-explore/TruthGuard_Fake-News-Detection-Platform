@@ -15,11 +15,11 @@
 {% endblock %}
 
 {% block admin_content %}
-<!-- Search and Filters -->
+<!-- Search and Filters - Updated form -->
 <div class="card border-0 shadow-lg mb-4" style="border-top: 5px solid #667eea; border-radius: 15px;">
     <div class="card-body p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
         <h5 class="card-title text-primary mb-4"><i class="fas fa-filter me-2"></i> Filter Users</h5>
-        <form class="row g-3">
+        <div class="row g-3">
             <div class="col-md-4">
                 <label for="searchUsers" class="form-label fw-bold">Search Users</label>
                 <div class="input-group shadow-sm">
@@ -47,12 +47,12 @@
                 </select>
             </div>
             <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100 shadow-lg"
-                        style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; border-radius: 25px;">
-                    <i class="fas fa-filter me-2"></i> Filter
+                <button type="button" class="btn btn-secondary w-100 shadow-lg" onclick="resetFilters()"
+                        style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border: none; border-radius: 25px;">
+                    <i class="fas fa-redo me-2"></i> Reset
                 </button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -80,7 +80,7 @@
                 </thead>
                 <tbody>
                     {% for user in users %}
-                    <tr class="user-row" style="transition: all 0.3s ease;">
+                    <tr class="user-row" style="transition: all 0.3s ease;" data-user-id="{{ user.id }}">
                         <td>
                             <span class="badge bg-dark" style="background: linear-gradient(135deg, #343a40 0%, #495057 100%);">
                                 #{{ user.id }}
@@ -106,22 +106,18 @@
                             <span class="text-muted"><i class="fas fa-envelope me-2 text-primary"></i>{{ user.email }}</span>
                         </td>
                         <td>
-                            <span class="badge shadow-sm"
+                            <span class="badge shadow-sm user-role-badge"
                                   style="background: linear-gradient(135deg, {% if user.role == 'admin' %}#ffc107{% else %}#007bff{% endif %} 0%, {% if user.role == 'admin' %}#fd7e14{% else %}#0056b3{% endif %} 100%); color: white; font-weight: 600;">
                                 <i class="fas {% if user.role == 'admin' %}fa-crown{% else %}fa-user{% endif %} me-1"></i>
                                 {{ user.role|title }}
                             </span>
                         </td>
                         <td>
-                            {% if user.is_active %}
-                            <span class="badge shadow-sm" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; font-weight: 600;">
-                                <i class="fas fa-check-circle me-1"></i> Active
+                            <span class="badge shadow-sm user-status-badge"
+                                  style="background: linear-gradient(135deg, {% if user.is_active %}#28a745{% else %}#dc3545{% endif %} 0%, {% if user.is_active %}#20c997{% else %}#e83e8c{% endif %} 100%); color: white; font-weight: 600;">
+                                <i class="fas {% if user.is_active %}fa-check-circle{% else %}fa-ban{% endif %} me-1"></i>
+                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
                             </span>
-                            {% else %}
-                            <span class="badge shadow-sm" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); color: white; font-weight: 600;">
-                                <i class="fas fa-ban me-1"></i> Inactive
-                            </span>
-                            {% endif %}
                         </td>
                         <td>
                             <span class="text-muted">
@@ -156,21 +152,21 @@
 
                                 {% if user.id != current_user.id %}
                                     {% if user.role != 'admin' %}
-                                    <form method="POST" action="{{ url_for('make_user_admin', user_id=user.id) }}"
-                                          class="d-inline" onsubmit="return confirm('Make this user an admin?')">
-                                        <button type="submit" class="btn btn-outline-warning shadow-sm" style="border-radius: 20px;">
-                                            <i class="fas fa-crown"></i>
-                                        </button>
-                                    </form>
+                                    <button class="btn btn-outline-warning shadow-sm make-admin-btn"
+                                            data-user-id="{{ user.id }}"
+                                            data-user-name="{{ user.name }}"
+                                            style="border-radius: 20px;">
+                                        <i class="fas fa-crown"></i>
+                                    </button>
                                     {% endif %}
 
-                                    <form method="POST" action="{{ url_for('toggle_user_status', user_id=user.id) }}"
-                                          class="d-inline" onsubmit="return confirm('Change user status?')">
-                                        <button type="submit" class="btn btn-outline-{{ 'danger' if user.is_active else 'success' }} shadow-sm"
-                                                style="border-radius: 20px;">
-                                            <i class="fas fa-{{ 'ban' if user.is_active else 'check' }}"></i>
-                                        </button>
-                                    </form>
+                                    <button class="btn btn-outline-{{ 'danger' if user.is_active else 'success' }} shadow-sm toggle-status-btn"
+                                            data-user-id="{{ user.id }}"
+                                            data-user-name="{{ user.name }}"
+                                            data-current-status="{{ 'active' if user.is_active else 'inactive' }}"
+                                            style="border-radius: 20px;">
+                                        <i class="fas fa-{{ 'ban' if user.is_active else 'check' }}"></i>
+                                    </button>
                                 {% else %}
                                     <button class="btn btn-outline-secondary shadow-sm" disabled style="border-radius: 20px;">
                                         <i class="fas fa-edit"></i>
@@ -191,31 +187,31 @@
                                     </h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                 </div>
-                                <div class="modal-body p-4">
-                                    <form>
+                                <form class="edit-user-form" data-user-id="{{ user.id }}">
+                                    <div class="modal-body p-4">
                                         <div class="mb-4">
                                             <label for="editName{{ user.id }}" class="form-label fw-bold text-primary">
                                                 <i class="fas fa-user me-2"></i>Full Name
                                             </label>
                                             <input type="text" class="form-control shadow-sm" id="editName{{ user.id }}"
-                                                   value="{{ user.name }}" style="border-color: #667eea;">
+                                                   name="name" value="{{ user.name }}" required style="border-color: #667eea;">
                                         </div>
                                         <div class="mb-4">
                                             <label for="editEmail{{ user.id }}" class="form-label fw-bold text-primary">
                                                 <i class="fas fa-envelope me-2"></i>Email Address
                                             </label>
                                             <input type="email" class="form-control shadow-sm" id="editEmail{{ user.id }}"
-                                                   value="{{ user.email }}" style="border-color: #667eea;">
+                                                   name="email" value="{{ user.email }}" required style="border-color: #667eea;">
                                         </div>
                                         <div class="mb-4">
                                             <label for="editRole{{ user.id }}" class="form-label fw-bold text-primary">
                                                 <i class="fas fa-user-tag me-2"></i>Role
                                             </label>
-                                            <select class="form-select shadow-sm" id="editRole{{ user.id }}" style="border-color: #667eea;">
-                                                <option value="user" {% if user.role == 'user' %}selected{% endif %} class="text-primary">
+                                            <select class="form-select shadow-sm" id="editRole{{ user.id }}" name="role" required style="border-color: #667eea;">
+                                                <option value="user" {% if user.role =='user' %}selected{% endif %} class="text-primary">
                                                     <i class="fas fa-user me-2"></i>User
                                                 </option>
-                                                <option value="admin" {% if user.role == 'admin' %}selected{% endif %} class="text-warning">
+                                                <option value="admin" {% if user.role =='admin' %}selected{% endif %} class="text-warning">
                                                     <i class="fas fa-crown me-2"></i>Admin
                                                 </option>
                                             </select>
@@ -223,25 +219,26 @@
                                         <div class="mb-4">
                                             <div class="form-check form-switch">
                                                 <input class="form-check-input" type="checkbox" role="switch"
-                                                       id="editActive{{ user.id }}" {% if user.is_active %}checked{% endif %}
+                                                       id="editActive{{ user.id }}" name="is_active" {% if user.is_active %}checked{% endif %}
                                                        style="background-color: #667eea; border-color: #667eea;">
                                                 <label class="form-check-label fw-bold text-success" for="editActive{{ user.id }}">
                                                     <i class="fas fa-power-off me-2"></i>Active Account
                                                 </label>
                                             </div>
                                         </div>
-                                    </form>
-                                </div>
-                                <div class="modal-footer border-0">
-                                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal"
-                                            style="border-radius: 20px;">
-                                        <i class="fas fa-times me-2"></i>Cancel
-                                    </button>
-                                    <button type="button" class="btn btn-primary shadow-lg" onclick="saveUserChanges({{ user.id }})"
-                                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 20px;">
-                                        <i class="fas fa-save me-2"></i>Save Changes
-                                    </button>
-                                </div>
+                                    </div>
+                                    <div class="modal-footer border-0">
+                                        <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal"
+                                                style="border-radius: 20px;">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </button>
+                                        <button type="submit" class="btn btn-primary shadow-lg save-user-btn"
+                                                data-user-id="{{ user.id }}"
+                                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 20px;">
+                                            <i class="fas fa-save me-2"></i>Save Changes
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -258,7 +255,7 @@
                         <div class="stat-icon mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                             <i class="fas fa-users text-white fa-2x"></i>
                         </div>
-                        <h3 class="mb-0 text-primary">{{ users|length }}</h3>
+                        <h3 class="mb-0 text-primary" id="totalUsers">{{ users|length }}</h3>
                         <p class="text-muted mb-0 fw-bold">Total Users</p>
                     </div>
                 </div>
@@ -269,7 +266,7 @@
                         <div class="stat-icon mb-3" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                             <i class="fas fa-crown text-white fa-2x"></i>
                         </div>
-                        <h3 class="mb-0 text-warning">{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</h3>
+                        <h3 class="mb-0 text-warning" id="totalAdmins">{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</h3>
                         <p class="text-muted mb-0 fw-bold">Admins</p>
                     </div>
                 </div>
@@ -280,7 +277,7 @@
                         <div class="stat-icon mb-3" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                             <i class="fas fa-check-circle text-white fa-2x"></i>
                         </div>
-                        <h3 class="mb-0 text-success">{{ users|selectattr('is_active', 'equalto', true)|list|length }}</h3>
+                        <h3 class="mb-0 text-success" id="totalActive">{{ users|selectattr('is_active', 'equalto', true)|list|length }}</h3>
                         <p class="text-muted mb-0 fw-bold">Active Users</p>
                     </div>
                 </div>
@@ -291,7 +288,7 @@
                         <div class="stat-icon mb-3" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                             <i class="fas fa-clock text-white fa-2x"></i>
                         </div>
-                        <h3 class="mb-0 text-secondary">{{ users|selectattr('last_login', 'none')|list|length }}</h3>
+                        <h3 class="mb-0 text-secondary" id="totalNeverLoggedIn">{{ users|selectattr('last_login', 'none')|list|length }}</h3>
                         <p class="text-muted mb-0 fw-bold">Never Logged In</p>
                     </div>
                 </div>
@@ -322,27 +319,27 @@
                 <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i> Add New User</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
-                <form id="addUserForm">
+            <form id="addUserForm">
+                <div class="modal-body p-4">
                     <div class="mb-4">
                         <label for="newUserName" class="form-label fw-bold text-primary">
                             <i class="fas fa-user me-2"></i>Full Name
                         </label>
-                        <input type="text" class="form-control shadow-sm" id="newUserName" required
+                        <input type="text" class="form-control shadow-sm" id="newUserName" name="name" required
                                placeholder="Enter user's full name" style="border-color: #667eea;">
                     </div>
                     <div class="mb-4">
                         <label for="newUserEmail" class="form-label fw-bold text-primary">
                             <i class="fas fa-envelope me-2"></i>Email Address
                         </label>
-                        <input type="email" class="form-control shadow-sm" id="newUserEmail" required
+                        <input type="email" class="form-control shadow-sm" id="newUserEmail" name="email" required
                                placeholder="user@example.com" style="border-color: #667eea;">
                     </div>
                     <div class="mb-4">
                         <label for="newUserRole" class="form-label fw-bold text-primary">
                             <i class="fas fa-user-tag me-2"></i>Role
                         </label>
-                        <select class="form-select shadow-sm" id="newUserRole" required style="border-color: #667eea;">
+                        <select class="form-select shadow-sm" id="newUserRole" name="role" required style="border-color: #667eea;">
                             <option value="user" class="text-primary">
                                 <i class="fas fa-user me-2"></i>User
                             </option>
@@ -355,33 +352,33 @@
                         <label for="newUserPassword" class="form-label fw-bold text-primary">
                             <i class="fas fa-lock me-2"></i>Password
                         </label>
-                        <input type="password" class="form-control shadow-sm" id="newUserPassword" required
+                        <input type="password" class="form-control shadow-sm" id="newUserPassword" name="password" required
                                placeholder="Enter password" style="border-color: #667eea;">
                         <div class="form-text text-muted">
-                            <i class="fas fa-info-circle me-1"></i> Will be sent to the user via email
+                            <i class="fas fa-info-circle me-1"></i> Password must be at least 8 characters
                         </div>
                     </div>
                     <div class="mb-4">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="sendWelcomeEmail" checked
+                            <input class="form-check-input" type="checkbox" id="sendWelcomeEmail" name="send_welcome_email" checked
                                    style="background-color: #667eea; border-color: #667eea;">
                             <label class="form-check-label fw-bold text-success" for="sendWelcomeEmail">
                                 <i class="fas fa-envelope me-2"></i>Send welcome email with login instructions
                             </label>
                         </div>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal"
-                        style="border-radius: 20px;">
-                    <i class="fas fa-times me-2"></i>Cancel
-                </button>
-                <button type="button" class="btn btn-primary shadow-lg" onclick="addNewUser()"
-                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 20px;">
-                    <i class="fas fa-plus me-2"></i>Add User
-                </button>
-            </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal"
+                            style="border-radius: 20px;">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary shadow-lg"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 20px;">
+                        <i class="fas fa-plus me-2"></i>Add User
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -449,183 +446,344 @@
     border-bottom: 3px solid #667eea;
 }
 
-/* Status badges */
-.status-active {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-}
-
-.status-inactive {
-    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
-    color: white;
-}
-
-.role-admin {
-    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-    color: white;
-}
-
-.role-user {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    color: white;
+/* Loading spinner */
+.spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.2em;
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function saveUserChanges(userId) {
-    const name = $(`#editName${userId}`).val();
-    const email = $(`#editEmail${userId}`).val();
-    const role = $(`#editRole${userId}`).val();
-    const isActive = $(`#editActive${userId}`).is(':checked');
+$(document).ready(function() {
+    // Filter functionality
+    $('#searchUsers').on('input', filterUsers);
+    $('#filterRole, #filterStatus').on('change', filterUsers);
 
-    // Show loading animation
-    const saveBtn = $(`#editUserModal${userId}`).find('.btn-primary');
-    const originalText = saveBtn.html();
-    saveBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
-    saveBtn.prop('disabled', true);
+    // Add user form submission
+    $('#addUserForm').on('submit', function(e) {
+        e.preventDefault();
+        addNewUser();
+    });
 
-    // Simulate API call
-    setTimeout(() => {
-        showAlert(`User ${name} updated successfully!`, 'success');
+    // Edit user form submissions
+    $('.edit-user-form').on('submit', function(e) {
+        e.preventDefault();
+        const userId = $(this).data('user-id');
+        saveUserChanges(userId);
+    });
 
-        // Reset button
-        saveBtn.html(originalText);
-        saveBtn.prop('disabled', false);
+    // Make admin button click
+    $('.make-admin-btn').on('click', function() {
+        const userId = $(this).data('user-id');
+        const userName = $(this).data('user-name');
+        makeUserAdmin(userId, userName);
+    });
 
-        // Close modal
-        $(`#editUserModal${userId}`).modal('hide');
-
-        // Update table row (in real app, this would be an AJAX update)
-        updateRowInTable(userId, name, email, role, isActive);
-    }, 1500);
-}
-
-function updateRowInTable(userId, name, email, role, isActive) {
-    const $row = $(`tr:has(td:contains("#${userId}"))`);
-
-    // Update name
-    $row.find('td:nth-child(2) strong').text(name);
-
-    // Update email
-    $row.find('td:nth-child(3) span').html(`<i class="fas fa-envelope me-2 text-primary"></i>${email}`);
-
-    // Update role badge
-    const roleBadge = role === 'admin' ?
-        `<span class="badge shadow-sm" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white; font-weight: 600;">
-            <i class="fas fa-crown me-1"></i>Admin
-        </span>` :
-        `<span class="badge shadow-sm" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; font-weight: 600;">
-            <i class="fas fa-user me-1"></i>User
-        </span>`;
-    $row.find('td:nth-child(4)').html(roleBadge);
-
-    // Update status badge
-    const statusBadge = isActive ?
-        `<span class="badge shadow-sm" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; font-weight: 600;">
-            <i class="fas fa-check-circle me-1"></i> Active
-        </span>` :
-        `<span class="badge shadow-sm" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); color: white; font-weight: 600;">
-            <i class="fas fa-ban me-1"></i> Inactive
-        </span>`;
-    $row.find('td:nth-child(5)').html(statusBadge);
-}
-
-function addNewUser() {
-    const name = $('#newUserName').val();
-    const email = $('#newUserEmail').val();
-    const role = $('#newUserRole').val();
-    const password = $('#newUserPassword').val();
-
-    if (!name || !email || !password) {
-        showAlert('Please fill in all required fields', 'warning');
-        return;
-    }
-
-    if (!validateEmail(email)) {
-        showAlert('Please enter a valid email address', 'warning');
-        return;
-    }
-
-    // Show loading animation
-    const addBtn = $('#addUserModal').find('.btn-primary');
-    const originalText = addBtn.html();
-    addBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Adding...');
-    addBtn.prop('disabled', true);
-
-    // Simulate API call
-    setTimeout(() => {
-        showAlert(`User ${name} added successfully! A welcome email has been sent.`, 'success');
-
-        // Reset button
-        addBtn.html(originalText);
-        addBtn.prop('disabled', false);
-
-        // Reset form
-        $('#addUserForm')[0].reset();
-
-        // Close modal
-        $('#addUserModal').modal('hide');
-
-        // Reload the page to show the new user
-        setTimeout(() => location.reload(), 1500);
-    }, 1500);
-}
-
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-// Filter users table with animation
-$('#searchUsers').on('input', function() {
-    const searchTerm = $(this).val().toLowerCase();
-    $('tbody tr').each(function() {
-        const text = $(this).text().toLowerCase();
-        const isVisible = text.includes(searchTerm);
-
-        if (isVisible) {
-            $(this).fadeIn(300);
-        } else {
-            $(this).fadeOut(300);
-        }
+    // Toggle status button click
+    $('.toggle-status-btn').on('click', function() {
+        const userId = $(this).data('user-id');
+        const userName = $(this).data('user-name');
+        const currentStatus = $(this).data('current-status');
+        toggleUserStatus(userId, userName, currentStatus);
     });
 });
 
-$('#filterRole, #filterStatus').on('change', function() {
+// Combined filter function
+function filterUsers() {
+    const searchTerm = $('#searchUsers').val().toLowerCase();
     const role = $('#filterRole').val();
     const status = $('#filterStatus').val();
 
     $('tbody tr').each(function() {
         const $row = $(this);
-        const rowRole = $row.find('td:nth-child(4) .badge').text().toLowerCase();
-        const rowStatus = $row.find('td:nth-child(5) .badge').text().toLowerCase().split(' ')[0];
+        const rowText = $row.text().toLowerCase();
 
+        // Extract role - look for "admin" or "user" in the badge
+        const rowRoleBadge = $row.find('.user-role-badge').text().toLowerCase();
+        let rowRole = 'user';
+        if (rowRoleBadge.includes('admin')) rowRole = 'admin';
+
+        // Extract status - look for "active" or "inactive" in the badge
+        const rowStatusBadge = $row.find('.user-status-badge').text().toLowerCase();
+        let rowStatus = 'active';
+        if (rowStatusBadge.includes('inactive')) rowStatus = 'inactive';
+
+        const showSearch = !searchTerm || rowText.includes(searchTerm);
         const showRole = !role || rowRole === role;
         const showStatus = !status || rowStatus === status;
 
-        if (showRole && showStatus) {
+        if (showSearch && showRole && showStatus) {
             $row.fadeIn(300);
         } else {
             $row.fadeOut(300);
         }
     });
-});
+}
 
-// Add hover effects to table rows
-$(document).on('mouseenter', '.user-row', function() {
-    $(this).addClass('hover-effect');
-}).on('mouseleave', '.user-row', function() {
-    $(this).removeClass('hover-effect');
-});
+function resetFilters() {
+    $('#searchUsers').val('');
+    $('#filterRole').val('');
+    $('#filterStatus').val('');
+    filterUsers();
+    showAlert('Filters reset successfully', 'info');
+}
+
+// Add new user function
+function addNewUser() {
+    const formData = {
+        name: $('#newUserName').val(),
+        email: $('#newUserEmail').val(),
+        role: $('#newUserRole').val(),
+        password: $('#newUserPassword').val(),
+        send_welcome_email: $('#sendWelcomeEmail').is(':checked')
+    };
+
+    if (!formData.name || !formData.email || !formData.password) {
+        showAlert('Please fill in all required fields', 'warning');
+        return;
+    }
+
+    if (!validateEmail(formData.email)) {
+        showAlert('Please enter a valid email address', 'warning');
+        return;
+    }
+
+    if (formData.password.length < 8) {
+        showAlert('Password must be at least 8 characters long', 'warning');
+        return;
+    }
+
+    // Show loading animation
+    const addBtn = $('#addUserModal').find('button[type="submit"]');
+    const originalText = addBtn.html();
+    addBtn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Adding...');
+    addBtn.prop('disabled', true);
+
+    // Send data to server
+    $.ajax({
+        url: '/admin/users/add',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            if (response.success) {
+                showAlert(`User ${formData.name} added successfully!`, 'success');
+                $('#addUserModal').modal('hide');
+                $('#addUserForm')[0].reset();
+
+                // Reload page to show new user
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showAlert(response.message || 'Failed to add user', 'danger');
+            }
+            addBtn.html(originalText);
+            addBtn.prop('disabled', false);
+        },
+        error: function(xhr, status, error) {
+            showAlert('Error adding user: ' + (xhr.responseJSON?.message || error), 'danger');
+            addBtn.html(originalText);
+            addBtn.prop('disabled', false);
+        }
+    });
+}
+
+// Save user changes function
+function saveUserChanges(userId) {
+    const form = $(`.edit-user-form[data-user-id="${userId}"]`);
+    const formData = {
+        name: $(`#editName${userId}`).val(),
+        email: $(`#editEmail${userId}`).val(),
+        role: $(`#editRole${userId}`).val(),
+        is_active: $(`#editActive${userId}`).is(':checked')
+    };
+
+    if (!formData.name || !formData.email) {
+        showAlert('Please fill in all required fields', 'warning');
+        return;
+    }
+
+    if (!validateEmail(formData.email)) {
+        showAlert('Please enter a valid email address', 'warning');
+        return;
+    }
+
+    // Show loading animation
+    const saveBtn = form.find('.save-user-btn');
+    const originalText = saveBtn.html();
+    saveBtn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...');
+    saveBtn.prop('disabled', true);
+
+    // Send data to server
+    $.ajax({
+        url: `/admin/users/edit/${userId}`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            if (response.success) {
+                showAlert(`User ${formData.name} updated successfully!`, 'success');
+                $(`#editUserModal${userId}`).modal('hide');
+
+                // Update row without reloading
+                updateUserRow(userId, formData);
+                updateStatistics();
+            } else {
+                showAlert(response.message || 'Failed to update user', 'danger');
+            }
+            saveBtn.html(originalText);
+            saveBtn.prop('disabled', false);
+        },
+        error: function(xhr, status, error) {
+            showAlert('Error updating user: ' + (xhr.responseJSON?.message || error), 'danger');
+            saveBtn.html(originalText);
+            saveBtn.prop('disabled', false);
+        }
+    });
+}
+
+// Update user row in table without reloading
+function updateUserRow(userId, userData) {
+    const $row = $(`tr[data-user-id="${userId}"]`);
+
+    // Update name
+    $row.find('td:nth-child(2) strong').text(userData.name);
+
+    // Update email
+    $row.find('td:nth-child(3) span').html(`<i class="fas fa-envelope me-2 text-primary"></i>${userData.email}`);
+
+    // Update role badge
+    const roleBadge = userData.role === 'admin' ?
+        `<span class="badge shadow-sm user-role-badge" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white; font-weight: 600;">
+            <i class="fas fa-crown me-1"></i>Admin
+        </span>` :
+        `<span class="badge shadow-sm user-role-badge" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; font-weight: 600;">
+            <i class="fas fa-user me-1"></i>User
+        </span>`;
+    $row.find('td:nth-child(4)').html(roleBadge);
+
+    // Update status badge
+    const statusText = userData.is_active ? 'Active' : 'Inactive';
+    const statusBadge = userData.is_active ?
+        `<span class="badge shadow-sm user-status-badge" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; font-weight: 600;">
+            <i class="fas fa-check-circle me-1"></i> Active
+        </span>` :
+        `<span class="badge shadow-sm user-status-badge" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); color: white; font-weight: 600;">
+            <i class="fas fa-ban me-1"></i> Inactive
+        </span>`;
+    $row.find('td:nth-child(5)').html(statusBadge);
+
+    // Update toggle status button
+    const toggleBtn = $row.find('.toggle-status-btn');
+    if (toggleBtn.length) {
+        toggleBtn.removeClass('btn-outline-danger btn-outline-success')
+                .addClass(userData.is_active ? 'btn-outline-danger' : 'btn-outline-success')
+                .html(`<i class="fas fa-${userData.is_active ? 'ban' : 'check'}"></i>`)
+                .data('current-status', userData.is_active ? 'active' : 'inactive');
+    }
+
+    // Update make admin button visibility
+    if (userData.role === 'admin') {
+        $row.find('.make-admin-btn').remove();
+    }
+}
+
+// Make user admin
+function makeUserAdmin(userId, userName) {
+    if (!confirm(`Are you sure you want to make "${userName}" an admin?`)) {
+        return;
+    }
+
+    $.ajax({
+        url: `/admin/users/make_admin/${userId}`,
+        type: 'POST',
+        success: function(response) {
+            if (response.success) {
+                showAlert(`User ${userName} is now an admin!`, 'success');
+
+                // Update the row without reloading
+                const userData = {
+                    role: 'admin',
+                    name: userName,
+                    // Keep other data as is
+                };
+                updateUserRow(userId, userData);
+                updateStatistics();
+            } else {
+                showAlert(response.message || 'Failed to make user admin', 'danger');
+            }
+        },
+        error: function(xhr, status, error) {
+            showAlert('Error: ' + (xhr.responseJSON?.message || error), 'danger');
+        }
+    });
+}
+
+// Toggle user status
+function toggleUserStatus(userId, userName, currentStatus) {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const action = newStatus === 'active' ? 'activate' : 'deactivate';
+
+    if (!confirm(`Are you sure you want to ${action} user "${userName}"?`)) {
+        return;
+    }
+
+    $.ajax({
+        url: `/admin/users/toggle_status/${userId}`,
+        type: 'POST',
+        success: function(response) {
+            if (response.success) {
+                showAlert(`User ${userName} has been ${action}d!`, 'success');
+
+                // Update the row without reloading
+                const userData = {
+                    is_active: newStatus === 'active',
+                    name: userName,
+                    // Keep other data as is
+                };
+                updateUserRow(userId, userData);
+                updateStatistics();
+            } else {
+                showAlert(response.message || 'Failed to update user status', 'danger');
+            }
+        },
+        error: function(xhr, status, error) {
+            showAlert('Error: ' + (xhr.responseJSON?.message || error), 'danger');
+        }
+    });
+}
+
+// Update statistics
+function updateStatistics() {
+    // In a real app, you would fetch updated stats from the server
+    // For now, we'll update based on visible rows
+    const visibleRows = $('tbody tr:visible');
+    const totalUsers = visibleRows.length;
+    const totalAdmins = visibleRows.filter(function() {
+        return $(this).find('.user-role-badge').text().toLowerCase().includes('admin');
+    }).length;
+    const totalActive = visibleRows.filter(function() {
+        return $(this).find('.user-status-badge').text().toLowerCase().includes('active');
+    }).length;
+
+    $('#totalUsers').text(totalUsers);
+    $('#totalAdmins').text(totalAdmins);
+    $('#totalActive').text(totalActive);
+}
 
 // Show alert function
 function showAlert(message, type = 'info') {
+    // Remove any existing alerts
+    $('.alert-dismissible').remove();
+
     const alertDiv = $(`
         <div class="alert alert-${type} alert-dismissible fade show position-fixed shadow-lg"
              style="top: 20px; right: 20px; z-index: 1060; min-width: 300px;">
-            <strong>${type.charAt(0).toUpperCase() + type.slice(1)}:</strong> ${message}
+            <strong>${type.charAt(0).toUpperCase() + type.slice(1)}!</strong> ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `);
@@ -634,13 +792,13 @@ function showAlert(message, type = 'info') {
 
     setTimeout(() => {
         alertDiv.alert('close');
-    }, 3000);
+    }, 5000);
 }
 
-// Initialize tooltips
-$(function () {
-    $('[data-bs-toggle="tooltip"]').tooltip();
-});
+// Email validation
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
 </script>
 {% endblock %}
-
